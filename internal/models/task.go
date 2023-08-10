@@ -14,5 +14,5 @@ type Task struct {
 	DueDate       *time.Time `json:"due_date" bun:"duedate"`
 	Importante    bool       `json:"importante" bun:"Importante"`
 	CreatedAt     time.Time  `json:"created_at" bun:"CreatedAt"`
-	Notes         []Note     `json:"notes" bun:"Notes"`
+	Notes         []Note     `json:"notes,omitempty"`
 }

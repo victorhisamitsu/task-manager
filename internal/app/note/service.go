@@ -38,3 +38,11 @@ func (s NoteService) DeleteNote(ctx context.Context, id string) (bool, error) {
 	}
 	return valid, nil
 }
+
+func (s NoteService) GetNoteByTaskID(ctx context.Context, taskID string) ([]models.Note, error) {
+	resp, err := s.repository.GetNoteByTaskID(ctx, taskID)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}

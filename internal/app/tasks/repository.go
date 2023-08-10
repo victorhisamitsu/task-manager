@@ -127,7 +127,7 @@ func (r *TasksRepository) DeleteTask(ctx context.Context, id string) (bool, erro
 	return true, nil
 }
 
-func (r *TasksRepository) GetTasksFilter(ctx context.Context, date string) ([]models.Task, error) {
+func (r *TasksRepository) GetTasksFilter(ctx context.Context, date time.Time) ([]models.Task, error) {
 	listTasks := make([]models.Task, 0)
 	err := r.DB.NewRaw("SELECT * FROM public.tasks WHERE DueDate <= ?", date).Scan(ctx, &listTasks)
 	if err != nil {
@@ -181,13 +181,16 @@ func (r *TasksRepository) GetTasksFilterBetween(ctx context.Context, dateStart t
 	return &listTasks, nil
 }
 
-func (r *TasksRepository) GetTasksWithNote(ctx context.Context, date string) (*models.Task, error) {
-	listTasks := models.Task{}
-	err := r.DB.NewRaw("SELECT * FROM public.tasks WHERE DueDate <= ?", date).Scan(ctx, &listTasks)
+func (r *TasksRepository) GetTasksWithNote(ctx context.Context, id string) (*models.Task, error) {
+	task := models.Task{}
+	count, err := r.DB.NewSelect().Model(&task).Where("id=?", id).ScanAndCount(ctx)
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("nenhuma task encontrada")
 	}
+	if count == 0 {
+		return nil, errors.New("nenhuma task encontrada")
+	}
 
-	return &listTasks, nil
+	return &task, nil
 }

@@ -189,6 +189,7 @@ func (h Handler) GetTaskWithNoteHandler(w http.ResponseWriter, r *http.Request) 
 	resp, err := h.Service.GetTaskWithNote(ctx, id)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
+		return
 	}
 	//Responder
 	resposta["Task"] = resp

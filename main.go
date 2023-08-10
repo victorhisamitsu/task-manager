@@ -25,7 +25,7 @@ func main() {
 	// Forcener a repository para a service
 	noteService := note.NewNoteService(NoteRepository)
 
-	taskService := tasks.NewTasksService(TasksRepository)
+	taskService := tasks.NewTasksService(TasksRepository, noteService)
 
 	// Fornecer a service para a handler
 	router := server.SetupHttpServer(taskService, noteService)
