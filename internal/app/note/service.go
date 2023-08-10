@@ -15,12 +15,12 @@ func NewNoteService(r *NoteRepository) *NoteService {
 	return &notes
 }
 
-func (s NoteService) CreateNote(ctx context.Context, id string, content string, order string) error {
-	err := s.repository.NewNote(ctx, id, content, order)
+func (s NoteService) CreateNote(ctx context.Context, id string, content string, order string) (string, error) {
+	noteID, err := s.repository.NewNote(ctx, id, content, order)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return noteID, nil
 }
 
 func (s NoteService) ChangeNote(ctx context.Context, id string, content string, order string) (*models.Note, error) {

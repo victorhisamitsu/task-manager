@@ -21,9 +21,9 @@ func NewNotesHandler(service *NoteService) *chi.Mux {
 	}
 	r := chi.NewRouter()
 	r.Post("/", handler.BodyApiHandlerNote)
-	r.Post("/{id}/notes/add", handler.CreateNoteHandler)
-	r.Put("/{id}/notes/update", handler.ChangeNoteHandler)
-	r.Delete("/{id}/notes/delete", handler.DeleteNoteHandler)
+	r.Post("/{id}/add", handler.CreateNoteHandler)
+	r.Put("/{noteID}/update", handler.ChangeNoteHandler)
+	r.Delete("/{noteID}/delete", handler.DeleteNoteHandler)
 	return r
 }
 
@@ -49,16 +49,19 @@ func (h Handler) CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Executar minha service
-	err = h.Service.CreateNote(ctx, id, bodyRequest.Content, bodyRequest.Order)
+	noteID, err := h.Service.CreateNote(ctx, id, bodyRequest.Content, bodyRequest.Order)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
+		return
 	}
+	resposta["noteID"] = noteID
+	httphandler.RespondSucess(resposta, w)
 }
 
 func (h Handler) ChangeNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyRequest := &models.NoteDto{}
-	id := chi.URLParam(r, "id")
+	noteID := chi.URLParam(r, "noteID")
 	resposta := map[string]any{"Sucess": true}
 	ctx := context.Background()
 	err := httphandler.ReadBody(r.Body, bodyRequest)
@@ -67,9 +70,10 @@ func (h Handler) ChangeNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Executar minha service
-	resp, err := h.Service.ChangeNote(ctx, id, bodyRequest.Content, bodyRequest.Order)
+	resp, err := h.Service.ChangeNote(ctx, noteID, bodyRequest.Content, bodyRequest.Order)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
+		return
 	}
 	//Responder
 	resposta["Note"] = resp
@@ -79,21 +83,17 @@ func (h Handler) ChangeNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h Handler) DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 	//Ler Body
-	bodyRequest := &models.TaskDto{}
-	id := chi.URLParam(r, "id")
+	noteID := chi.URLParam(r, "noteID")
 	resposta := map[string]any{"Sucess": true}
 	ctx := context.Background()
-	err := httphandler.ReadBody(r.Body, bodyRequest)
+
+	//Executar minha service
+	resp, err := h.Service.DeleteNote(ctx, noteID)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
 		return
 	}
-	//Executar minha service
-	resp, err := h.Service.DeleteNote(ctx, id)
-	if err != nil {
-		httphandler.RespondError(err.Error(), resposta, w)
-	}
 	//Responder
-	resposta["Note"] = resp
+	resposta["Delete"] = resp
 	httphandler.RespondSucess(resposta, w)
 }

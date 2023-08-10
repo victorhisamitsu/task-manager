@@ -1,8 +1,7 @@
 package models
 
 type NoteDto struct {
-	Content string `json:"conten"`
+	Content string `json:"content"`
 	Order   string `json:"order"`
-	TaskId  string `json:"taskId"`
-	Id      string `json:"id"`
+	Id      string `json:"ID"`
 }

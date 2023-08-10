@@ -11,7 +11,7 @@ func SetupHttpServer(tasksService *tasks.TasksService, noteService *note.NoteSer
 	note := note.NewNotesHandler(noteService)
 	tasks := tasks.NewTasksHandler(tasksService)
 
-	router.Mount("/note", note)
+	router.Mount("/notes", note)
 	router.Mount("/tasks", tasks)
 
 	return router

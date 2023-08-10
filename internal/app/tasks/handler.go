@@ -90,6 +90,7 @@ func (h Handler) ChangeTaskHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	err := httphandler.ReadBody(r.Body, bodyRequest)
 	id := chi.URLParam(r, "id")
+	fmt.Println(id)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
 		return
@@ -99,6 +100,7 @@ func (h Handler) ChangeTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
 	}
+	fmt.Println(resp)
 	//Responder
 	resposta["Task"] = resp
 	httphandler.RespondSucess(resposta, w)
@@ -120,6 +122,7 @@ func (h Handler) GetTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
 	}
+	fmt.Println(resp)
 	//Responder
 	resposta["Task"] = resp
 	httphandler.RespondSucess(resposta, w)
@@ -144,11 +147,10 @@ func (h Handler) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 		httphandler.RespondError(err.Error(), resposta, w)
 	}
 	//Responder
-	resposta["Task"] = resp
+	resposta["Delete"] = resp
 	httphandler.RespondSucess(resposta, w)
 }
 
-// TODO
 func (h Handler) UpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyRequest := &models.TaskDto{}
@@ -161,11 +163,12 @@ func (h Handler) UpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Executar minha service
-	resp, err := h.Service.ChangeTask(ctx, id, bodyRequest.Title, bodyRequest.Description, bodyRequest.DueDate, bodyRequest.Importante)
+	resp, err := h.Service.ChangeStatus(ctx, id, bodyRequest.Status)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
 	}
 	//Responder
+	fmt.Println(resp)
 	resposta["Task"] = resp
 	httphandler.RespondSucess(resposta, w)
 
@@ -183,7 +186,7 @@ func (h Handler) GetTaskWithNoteHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	//Executar minha service
-	resp, err := h.Service.GetTask(ctx, id)
+	resp, err := h.Service.GetTaskWithNote(ctx, id)
 	if err != nil {
 		httphandler.RespondError(err.Error(), resposta, w)
 	}

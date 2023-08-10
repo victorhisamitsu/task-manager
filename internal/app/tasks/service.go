@@ -17,7 +17,7 @@ func NewTasksService(r *TasksRepository) *TasksService {
 	return &tasks
 }
 
-func (s TasksService) CreateTask(ctx context.Context, title string, description string, status string, dueData time.Time, important bool) (string, error) {
+func (s TasksService) CreateTask(ctx context.Context, title string, description string, status string, dueData *time.Time, important bool) (string, error) {
 	if title == "" {
 		return "nil", errors.New("titulo não pode ser")
 	}
@@ -32,42 +32,51 @@ func (s TasksService) GetAll(ctx context.Context, filter string) ([]models.Task,
 
 	switch filter {
 	case "all":
-		dateNow := time.Now().Format("02/01/2006")
-		query := "DueDate = " + dateNow
-		listTask, err := s.repository.GetTasksFilter(ctx, query)
+		listTask, err := s.repository.GetAll(ctx)
 		if err != nil {
 			return nil, err
 		}
 		return listTask, nil
 	case "today":
-		dateNow := time.Now().Format("02/01/2006")
-		listTask, err := s.repository.GetTasksFilter(ctx, dateNow)
+		now := time.Now()
+		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+		listTask, err := s.repository.GetTasksFilterBetween(ctx, startOfDay, endOfDay)
 		if err != nil {
 			return nil, err
 		}
-		return listTask, nil
+		if *listTask == nil {
+			return nil, errors.New("nenhuma task encontrada")
+		}
+		return *listTask, nil
 	case "month":
-		dateNow := time.Now().Format("02/01/2006")
-		afterMonth := time.Now().Add(30 * 24 * time.Hour).Format("02/01/2006")
-		query := "DueDate >= " + dateNow + " AND DueDate <= " + afterMonth
-		listTask, err := s.repository.GetTasksFilter(ctx, query)
+		now := time.Now()
+		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		afterMonth := time.Now().Add(30 * 24 * time.Hour)
+		listTask, err := s.repository.GetTasksFilterBetween(ctx, startOfDay, afterMonth)
 		if err != nil {
 			return nil, err
 		}
-		return listTask, nil
+		if *listTask == nil {
+			return nil, errors.New("nenhuma task encontrada")
+		}
+		return *listTask, nil
 	case "week":
-		dateNow := time.Now().Format("02/01/2006")
-		afterMonth := time.Now().Add(7 * 24 * time.Hour).Format("02/01/2006")
-		query := "DueDate >= " + dateNow + " AND DueDate <= " + afterMonth
-		listTask, err := s.repository.GetTasksFilter(ctx, query)
+		now := time.Now()
+		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		afterWeek := time.Now().Add(7 * 24 * time.Hour)
+		listTask, err := s.repository.GetTasksFilterBetween(ctx, startOfDay, afterWeek)
 		if err != nil {
 			return nil, err
 		}
-		return listTask, nil
+		if *listTask == nil {
+			return nil, errors.New("nenhuma task encontrada")
+		}
+
+		return *listTask, nil
 	case "done":
 		dateNow := time.Now().Format("02/01/2006")
-		query := "DueDate <= " + dateNow
-		listTask, err := s.repository.GetTasksFilter(ctx, query)
+		listTask, err := s.repository.GetTasksFilter(ctx, dateNow)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +90,7 @@ func (s TasksService) GetAll(ctx context.Context, filter string) ([]models.Task,
 	}
 }
 
-func (s TasksService) ChangeTask(ctx context.Context, id string, title string, description string, dueData time.Time, important bool) (*models.Task, error) {
+func (s TasksService) ChangeTask(ctx context.Context, id string, title string, description string, dueData *time.Time, important bool) (*models.Task, error) {
 	if id == "" {
 		return nil, errors.New("id nulo")
 	}
@@ -106,4 +115,23 @@ func (s TasksService) DeleteTask(ctx context.Context, id string) (bool, error) {
 		return false, err
 	}
 	return valid, nil
+}
+
+func (s TasksService) ChangeStatus(ctx context.Context, id string, status string) (*models.Task, error) {
+	if id == "" {
+		return nil, errors.New("id nulo")
+	}
+	resp, err := s.repository.ChangeStatus(ctx, id, status)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (s TasksService) GetTaskWithNote(ctx context.Context, id string) (*models.Task, error) {
+	task, err := s.repository.GetTasksWithNote(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }

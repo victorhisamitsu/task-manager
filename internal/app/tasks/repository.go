@@ -21,7 +21,7 @@ func NewRepositoryTasks(d *bun.DB) *TasksRepository {
 	}
 }
 
-func (r *TasksRepository) NewTask(ctx context.Context, title string, description string, status string, dueData time.Time, important bool) (string, error) {
+func (r *TasksRepository) NewTask(ctx context.Context, title string, description string, status string, dueData *time.Time, important bool) (string, error) {
 
 	// Criar task
 	dateNow := time.Now()
@@ -61,9 +61,10 @@ func (r *TasksRepository) GetAll(ctx context.Context) ([]models.Task, error) {
 	return listTasks, nil
 }
 
-func (r *TasksRepository) ChangeTask(ctx context.Context, id string, title string, description string, dueData time.Time, important bool) (*models.Task, error) {
+func (r *TasksRepository) ChangeTask(ctx context.Context, id string, title string, description string, dueData *time.Time, important bool) (*models.Task, error) {
 	task := []models.Task{}
 
+	fmt.Println(id)
 	// Consulta Db para ver se já existe task com mesmio titulo
 	count, err := r.DB.NewSelect().Model(&task).Where("id=?", id).ScanAndCount(ctx)
 	if err != nil {
@@ -126,12 +127,67 @@ func (r *TasksRepository) DeleteTask(ctx context.Context, id string) (bool, erro
 	return true, nil
 }
 
-func (r *TasksRepository) GetTasksFilter(ctx context.Context, query string) ([]models.Task, error) {
+func (r *TasksRepository) GetTasksFilter(ctx context.Context, date string) ([]models.Task, error) {
 	listTasks := make([]models.Task, 0)
-	err := r.DB.NewRaw("SELECT * FROM public.tasks WHERE ?", query).Scan(ctx, &listTasks)
+	err := r.DB.NewRaw("SELECT * FROM public.tasks WHERE DueDate <= ?", date).Scan(ctx, &listTasks)
 	if err != nil {
-		return nil, errors.New("nenhuma task cadastrada")
+		fmt.Println(err)
+		return nil, errors.New("nenhuma task encontrada")
 	}
 
 	return listTasks, nil
+}
+
+func (r *TasksRepository) ChangeStatus(ctx context.Context, id string, status string) (*models.Task, error) {
+	task := []models.Task{}
+
+	fmt.Println(id)
+	// Consulta Db para ver se já existe task com mesmio titulo
+	count, err := r.DB.NewSelect().Model(&task).Where("id=?", id).ScanAndCount(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		return nil, fmt.Errorf("task não encontrada")
+	}
+
+	//Alterar dados do DB
+	tasks := models.Task{
+		Status: status,
+	}
+
+	res, err := r.DB.NewUpdate().Model(&tasks).OmitZero().Where("id=?", id).Returning("*").Exec(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	if res == nil {
+		return nil, errors.New("erro na busca de task")
+	}
+
+	// Return
+	fmt.Println(res)
+	return &tasks, nil
+
+}
+
+func (r *TasksRepository) GetTasksFilterBetween(ctx context.Context, dateStart time.Time, dateFinish time.Time) (*[]models.Task, error) {
+	listTasks := make([]models.Task, 0)
+	err := r.DB.NewRaw("SELECT * FROM public.tasks WHERE DueDate >= ? AND DueDate <= ?", dateStart, dateFinish).Scan(ctx, &listTasks)
+	if err != nil {
+		fmt.Println(err)
+		return nil, errors.New("nenhuma task encontrada")
+	}
+	return &listTasks, nil
+}
+
+func (r *TasksRepository) GetTasksWithNote(ctx context.Context, date string) (*models.Task, error) {
+	listTasks := models.Task{}
+	err := r.DB.NewRaw("SELECT * FROM public.tasks WHERE DueDate <= ?", date).Scan(ctx, &listTasks)
+	if err != nil {
+		fmt.Println(err)
+		return nil, errors.New("nenhuma task encontrada")
+	}
+
+	return &listTasks, nil
 }
