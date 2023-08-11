@@ -21,7 +21,7 @@ func NewRepositoryNote(d *bun.DB) *NoteRepository {
 	}
 }
 
-// Nova nota
+// Criar nova nota
 func (r *NoteRepository) NewNote(ctx context.Context, id string, content string, order string) (string, error) {
 
 	//Verificar se existe task com esse id
