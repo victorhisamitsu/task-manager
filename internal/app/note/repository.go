@@ -21,6 +21,7 @@ func NewRepositoryNote(d *bun.DB) *NoteRepository {
 	}
 }
 
+// Nova nota
 func (r *NoteRepository) NewNote(ctx context.Context, id string, content string, order string) (string, error) {
 
 	//Verificar se existe task com esse id
@@ -48,28 +49,10 @@ func (r *NoteRepository) NewNote(ctx context.Context, id string, content string,
 	if res == nil {
 		return "", nil
 	}
-
-	// note := []models.Note{
-	// 	newNote,
-	// }
-
-	// tasks := models.Task{
-	// 	Notes: note,
-	// }
-
-	// res, err = r.DB.NewUpdate().Model(&tasks).OmitZero().Where("id=?", id).Returning("*").Exec(ctx)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return "", err
-	// }
-	// if res == nil {
-	// 	return "", errors.New("erro na busca de task")
-	// }
-
-	// Return
 	return noteID, nil
 }
 
+// Alterar nota
 func (r *NoteRepository) ChangeNote(ctx context.Context, id string, content string, order string) (*models.Note, error) {
 	notes := []models.Note{}
 
@@ -102,6 +85,7 @@ func (r *NoteRepository) ChangeNote(ctx context.Context, id string, content stri
 	return &note, nil
 }
 
+// Deletar nota
 func (r *NoteRepository) DeleteNote(ctx context.Context, id string) (bool, error) {
 
 	note := models.Note{}
@@ -121,6 +105,7 @@ func (r *NoteRepository) DeleteNote(ctx context.Context, id string) (bool, error
 	return true, nil
 }
 
+// Buscar todas as notas que pertecem a uma task
 func (r *NoteRepository) GetNoteByTaskID(ctx context.Context, taskID string) ([]models.Note, error) {
 	notes := []models.Note{}
 

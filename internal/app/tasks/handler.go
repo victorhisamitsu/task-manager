@@ -2,9 +2,7 @@ package tasks
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/Hitsa/task-manager/internal/httphandler"
@@ -30,16 +28,7 @@ func NewTasksHandler(service *TasksService) *chi.Mux {
 	return r
 }
 
-func (h Handler) BodyApiHandlerTasks(w http.ResponseWriter, r *http.Request) {
-	resposta := map[string]any{}
-	body, _ := io.ReadAll(r.Body)
-	var minhaVariavel map[string]string
-	json.Unmarshal(body, &minhaVariavel)
-	resposta["resposta"] = minhaVariavel
-	variavelJson, _ := json.Marshal(minhaVariavel)
-	w.Write(variavelJson)
-}
-
+// Criar uma task do começo
 func (h Handler) CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyRequest := &models.TaskDto{}
@@ -60,6 +49,7 @@ func (h Handler) CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	httphandler.RespondSucess(resposta, w)
 }
 
+// Buscar todas as tasks com filtro
 func (h *Handler) GetAllTasksHandler(w http.ResponseWriter, r *http.Request) {
 
 	//Ler requisição
@@ -83,6 +73,7 @@ func (h *Handler) GetAllTasksHandler(w http.ResponseWriter, r *http.Request) {
 	httphandler.RespondSucess(resposta, w)
 }
 
+// Alterar task pelo ID da task
 func (h Handler) ChangeTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyRequest := &models.TaskDto{}
@@ -107,28 +98,7 @@ func (h Handler) ChangeTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h Handler) GetTaskHandler(w http.ResponseWriter, r *http.Request) {
-
-	bodyRequest := &models.TaskDto{}
-	resposta := map[string]any{"Sucess": true}
-	ctx := context.Background()
-	err := httphandler.ReadBody(r.Body, bodyRequest)
-	if err != nil {
-		httphandler.RespondError(err.Error(), resposta, w)
-		return
-	}
-	//Executar minha service
-	resp, err := h.Service.GetTask(ctx, bodyRequest.ID)
-	if err != nil {
-		httphandler.RespondError(err.Error(), resposta, w)
-	}
-	fmt.Println(resp)
-	//Responder
-	resposta["Task"] = resp
-	httphandler.RespondSucess(resposta, w)
-
-}
-
+// Deletar tasks pelo ID
 func (h Handler) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	//Ler Body
 	bodyRequest := &models.TaskDto{}
@@ -151,6 +121,7 @@ func (h Handler) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	httphandler.RespondSucess(resposta, w)
 }
 
+// Mudar status da task pelo ID
 func (h Handler) UpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyRequest := &models.TaskDto{}
@@ -174,6 +145,7 @@ func (h Handler) UpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Buscar a task pelo ID e buscar as notas que ela contém
 func (h Handler) GetTaskWithNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	bodyRequest := &models.TaskDto{}

@@ -2,8 +2,6 @@ package note
 
 import (
 	"context"
-	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/Hitsa/task-manager/internal/httphandler"
@@ -20,22 +18,10 @@ func NewNotesHandler(service *NoteService) *chi.Mux {
 		Service: service,
 	}
 	r := chi.NewRouter()
-	r.Post("/", handler.BodyApiHandlerNote)
 	r.Post("/{id}/add", handler.CreateNoteHandler)
 	r.Put("/{noteID}/update", handler.ChangeNoteHandler)
 	r.Delete("/{noteID}/delete", handler.DeleteNoteHandler)
 	return r
-}
-
-func (h Handler) BodyApiHandlerNote(w http.ResponseWriter, r *http.Request) {
-	resposta := map[string]any{}
-	body, _ := io.ReadAll(r.Body)
-	var minhaVariavel map[string]string
-	json.Unmarshal(body, &minhaVariavel)
-	resposta["resposta"] = minhaVariavel
-	variavelJson, _ := json.Marshal(minhaVariavel)
-
-	w.Write(variavelJson)
 }
 
 func (h Handler) CreateNoteHandler(w http.ResponseWriter, r *http.Request) {
